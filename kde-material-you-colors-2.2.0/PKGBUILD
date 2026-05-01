@@ -1,0 +1,26 @@
+pkgname=kde-material-you-colors
+pkgver=0.5.7
+pkgrel=1
+pkgdesc="Automatic Material You colors generator for KDE Plasma"
+arch=('any')
+url="https://github.com/luisbocanegra/kde-material-you-colors"
+license=('GPL3')
+depends=('python' 'python-pillow' 'python-numpy' 'python-colorthief')
+makedepends=('git' 'python-build' 'python-installer' 'python-wheel')
+source=("git+https://github.com/luisbocanegra/kde-material-you-colors.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$pkgname"
+  git describe --tags --long | sed 's/^v//;s/-/./g'
+}
+
+build() {
+  cd "$srcdir/$pkgname"
+  python -m build --wheel --no-isolation
+}
+
+package() {
+  cd "$srcdir/$pkgname"
+  python -m installer --destdir="$pkgdir" dist/*.whl
+}

@@ -1,18 +1,18 @@
 # Maintainer: Erik Dubois <erik.dubois@gmail.com>
-pkgname=kiro-calamares-config
-_pkgname=kiro-calamares-config
+pkgname=sst-calamares-config
+_pkgname=sst-calamares-config
 _destname1="/etc"
 _destname2="/usr"
 _destnamescript="/usr/bin"
 pkgver=26.04
 pkgrel=11
-pkgdesc="calamares config for kiro"
+pkgdesc="calamares config for sst"
 arch=('any')
-url="https://github.com/kirodubes/${_pkgname}"
+url="https://github.com/2ndShiftTech/${_pkgname}"
 license=('GPL3')
 makedepends=('git')
 depends=()
-conflicts=(kiro-calamares-config-next)
+conflicts=(sst-calamares-config-next)
 provides=("${pkgname}")
 options=(!strip !emptydirs)
 source=(${_pkgname}::"git+$url")

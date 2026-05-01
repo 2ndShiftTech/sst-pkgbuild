@@ -2,36 +2,41 @@
 
 PKGBUILD="PKGBUILD"
 
-# Get current year and month
-YEAR=$(date +%y)
-MONTH=$(date +%m)
-
-# Compose new version
-NEW_VER="${YEAR}.${MONTH}"
-
-# Extract current pkgver and pkgrel
-OLD_VER=$(grep ^pkgver= "$PKGBUILD" | cut -d= -f2)
-OLD_REL=$(grep ^pkgrel= "$PKGBUILD" | cut -d= -f2)
-
-# Decide on new pkgrel
-if [[ "$NEW_VER" == "$OLD_VER" ]]; then
-  NEW_REL=$(printf "%02d" $((10#$OLD_REL + 1)))
+# Detect if PKGBUILD uses git (has pkgver() function)
+if grep -q "^pkgver()" "$PKGBUILD"; then
+  echo "Detected git-based PKGBUILD, skipping pkgver/pkgrel auto-bump"
 else
-  NEW_REL="01"
+  # Get current year and month
+  YEAR=$(date +%y)
+  MONTH=$(date +%m)
+
+  # Compose new version
+  NEW_VER="${YEAR}.${MONTH}"
+
+  # Extract current pkgver and pkgrel
+  OLD_VER=$(grep ^pkgver= "$PKGBUILD" | cut -d= -f2)
+  OLD_REL=$(grep ^pkgrel= "$PKGBUILD" | cut -d= -f2)
+
+  # Decide on new pkgrel
+  if [[ "$NEW_VER" == "$OLD_VER" ]]; then
+    NEW_REL=$(printf "%02d" $((10#$OLD_REL + 1)))
+  else
+    NEW_REL="01"
+  fi
+
+  # Update PKGBUILD
+  sed -i "s/^pkgver=.*/pkgver=${NEW_VER}/" "$PKGBUILD"
+  sed -i "s/^pkgrel=.*/pkgrel=${NEW_REL}/" "$PKGBUILD"
+
+  echo "Updated PKGBUILD: pkgver=${NEW_VER}, pkgrel=${NEW_REL}"
 fi
-
-# Update PKGBUILD
-sed -i "s/^pkgver=.*/pkgver=${NEW_VER}/" "$PKGBUILD"
-sed -i "s/^pkgrel=.*/pkgrel=${NEW_REL}/" "$PKGBUILD"
-
-echo "Updated PKGBUILD: pkgver=${NEW_VER}, pkgrel=${NEW_REL}"
 
 
 # CONFIGURATION
 CHROOT="$HOME/Documents/chroot-archlinux"
-DEST_DIR="/home/erik/KIRO/kiro_repo/x86_64/"
+DEST_DIR="$HOME/Documents/SST/sst-repo/x86_64"
 CHOICE=2  # Default to makepkg
-MAKEPKG_LIST=()  # Add package names here that should always use makepkg
+MAKEPKG_LIST=("kde-material-you-colors")  # Force makepkg for this
 
 # GET DIRECTORY INFORMATION
 PWD_PATH=$(pwd)
@@ -62,7 +67,6 @@ if [[ "$CHOICE" == "1" ]]; then
   echo "#############################################################################################"
   tput sgr0
 
-  # Ensure chroot exists
   if [[ ! -d "$CHROOT/root" ]]; then
     echo "Chroot not found at $CHROOT. Exiting."
     exit 1
@@ -78,15 +82,20 @@ else
   echo "#############################################################################################"
   tput sgr0
 
-  makepkg --noconfirm
+  # Ensure fresh git sources for -git packages
+  makepkg --noconfirm --clean --syncdeps
 fi
 
 # MOVE BUILT PACKAGE TO DESTINATION
 tput setaf 6
 echo "Moving built packages to $DEST_DIR"
 echo "#############################################################################################"
-mv -n "$PKG_NAME"*pkg.tar.zst "$DEST_DIR"
+mv -n *.pkg.tar.zst "$DEST_DIR"
 tput sgr0
+
+# UPDATE REPO DATABASE
+cd "$DEST_DIR" || exit 1
+repo-add sst-repo.db.tar.gz *.pkg.tar.zst
 
 # CLEANUP
 tput setaf 6
