@@ -33,8 +33,7 @@ workdir=$(pwd)
 
 # Define array of target directories
 dirs=(
-    "kiro-calamares-config"
-    "kiro-calamares-config-next"
+    "sst-calamares-config"
 )
 
 # Loop through each directory
