@@ -1,0 +1,29 @@
+pkgname=zsh-sst-plugins-core
+pkgver=25.05
+pkgrel=01
+pkgdesc="Core Zsh plugins for sst environment"
+arch=('any')
+url="https://github.com/zsh-users"
+license=('MIT')
+depends=('zsh' 'oh-my-zsh-sst')
+makedepends=('git')
+source=(
+  "zsh-autosuggestions::git+https://github.com/zsh-users/zsh-autosuggestions.git"
+  "zsh-syntax-highlighting::git+https://github.com/zsh-users/zsh-syntax-highlighting.git"
+  "zsh-completions::git+https://github.com/zsh-users/zsh-completions.git"
+)
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+  plugin_dir="$pkgdir/usr/share/oh-my-zsh/custom/plugins"
+  install -dm755 "$plugin_dir"
+
+  cp -r "$srcdir/zsh-autosuggestions" \
+    "$plugin_dir/zsh-autosuggestions"
+
+  cp -r "$srcdir/zsh-syntax-highlighting" \
+    "$plugin_dir/zsh-syntax-highlighting"
+
+  cp -r "$srcdir/zsh-completions" \
+    "$plugin_dir/zsh-completions"
+}

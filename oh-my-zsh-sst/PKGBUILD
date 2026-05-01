@@ -1,0 +1,23 @@
+pkgname=oh-my-zsh-sst
+pkgver=1
+pkgrel=1
+pkgdesc="Custom Oh My Zsh configuration and plugins bundle (sst)"
+arch=('any')
+url="https://github.com/ohmyzsh/ohmyzsh"
+license=('MIT')
+depends=('zsh' 'git')
+source=("git+https://github.com/ohmyzsh/ohmyzsh.git")
+sha256sums=('SKIP')
+
+package() {
+    cd "$srcdir/ohmyzsh"
+
+    # Install Oh My Zsh core files
+    install -dm755 "$pkgdir/usr/share/oh-my-zsh"
+    cp -r . "$pkgdir/usr/share/oh-my-zsh"
+
+    # Optional: install custom config
+    install -dm755 "$pkgdir/etc/skel"
+    install -m644 templates/zshrc.zsh-template \
+    "$pkgdir/etc/skel/.zshrc"
+}

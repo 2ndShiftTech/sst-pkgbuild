@@ -1,0 +1,29 @@
+pkgname=zsh-sst-plugins-extra
+pkgver=25.05
+pkgrel=01
+pkgdesc="Extra Zsh plugins for sst environment"
+arch=('any')
+url="https://github.com"
+license=('MIT')
+depends=('zsh' 'oh-my-zsh-sst' 'zsh-sst-plugins-core')
+makedepends=('git')
+source=(
+  "fast-syntax-highlighting::git+https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
+  "zsh-autopair::git+https://github.com/hlissner/zsh-autopair.git"
+  "zsh-history-substring-search::git+https://github.com/zsh-users/zsh-history-substring-search.git"
+)
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+  plugin_dir="$pkgdir/usr/share/oh-my-zsh/custom/plugins"
+  install -dm755 "$plugin_dir"
+
+  cp -r "$srcdir/fast-syntax-highlighting" \
+    "$plugin_dir/fast-syntax-highlighting"
+
+  cp -r "$srcdir/zsh-autopair" \
+    "$plugin_dir/zsh-autopair"
+
+  cp -r "$srcdir/zsh-history-substring-search" \
+    "$plugin_dir/zsh-history-substring-search"
+}
