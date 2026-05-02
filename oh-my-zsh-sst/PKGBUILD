@@ -1,6 +1,6 @@
 pkgname=oh-my-zsh-sst
 pkgver=26.05
-pkgrel=01
+pkgrel=02
 pkgdesc="Custom Oh My Zsh configuration and plugins bundle (sst)"
 arch=('any')
 url="https://github.com/ohmyzsh/ohmyzsh"
