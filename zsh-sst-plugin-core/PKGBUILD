@@ -1,11 +1,11 @@
 pkgname=zsh-sst-plugins-core
-pkgver=25.05
-pkgrel=01
+pkgver=26.05
+pkgrel=02
 pkgdesc="Core Zsh plugins for sst environment"
 arch=('any')
 url="https://github.com/zsh-users"
 license=('MIT')
-depends=('zsh' 'oh-my-zsh-sst')
+depends=('zsh')
 makedepends=('git')
 source=(
   "zsh-autosuggestions::git+https://github.com/zsh-users/zsh-autosuggestions.git"

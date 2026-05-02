@@ -1,11 +1,11 @@
 pkgname=zsh-sst-plugins-extra
-pkgver=25.05
-pkgrel=01
+pkgver=26.05
+pkgrel=03
 pkgdesc="Extra Zsh plugins for sst environment"
 arch=('any')
 url="https://github.com"
 license=('MIT')
-depends=('zsh' 'oh-my-zsh-sst' 'zsh-sst-plugins-core')
+depends=('zsh')
 makedepends=('git')
 source=(
   "fast-syntax-highlighting::git+https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
