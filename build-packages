@@ -11,6 +11,8 @@
 # Editor    : 2nd Shift Technician
 # Github    : https://github.com/2ndShiftTech
 ##################################################################################################################
+#!/bin/bash
+
 set -u
 shopt -s nullglob
 

@@ -1,28 +1,55 @@
-# Maintainer: Erik Dubois <erik.dubois@gmail.com>
 pkgname=sst-calamares-config
 _pkgname=sst-calamares-config
-_destname1="/etc"
-_destname2="/usr"
-_destnamescript="/usr/bin"
 pkgver=26.05
-pkgrel=03
+pkgrel=05
 pkgdesc="calamares config for sst"
 arch=('any')
 url="https://github.com/2ndShiftTech/${_pkgname}"
 license=('GPL3')
+
 makedepends=('git')
 depends=()
+
 conflicts=(sst-calamares-config-next)
 provides=("${pkgname}")
-options=(!strip !emptydirs)
-source=(${_pkgname}::"git+$url")
+
+source=("${_pkgname}::git+$url")
 sha256sums=('SKIP')
+
 install='readme.install'
+
+build() {
+    cd "${srcdir}/${_pkgname}"
+
+    echo "Running build-calamares..."
+
+    if [[ -x "etc/calamares/pkgbuild/build-calamares" ]]; then
+        bash "etc/calamares/pkgbuild/build-calamares"
+    else
+        echo "ERROR: build-calamares not found or not executable"
+        exit 1
+    fi
+}
+
 package() {
-	mkdir -p "${pkgdir}${_destname1}"
-	cp -r "${srcdir}/${_pkgname}/${_destname1}"* "${pkgdir}"
-	mkdir -p "${pkgdir}${_destname2}"
-	cp -r "${srcdir}/${_pkgname}/${_destname2}"* "${pkgdir}"
-	mkdir -p "${pkgdir}${_destnamescript}"
-	cp -r "${srcdir}/${_pkgname}/etc/calamares/pkgbuild/build-calamares" "${pkgdir}${_destnamescript}"
+    cd "${srcdir}/${_pkgname}"
+
+    # /etc
+    if [ -d "etc" ]; then
+        mkdir -p "${pkgdir}/etc"
+        cp -r etc/. "${pkgdir}/etc/"
+    fi
+
+    # /usr
+    if [ -d "usr" ]; then
+        mkdir -p "${pkgdir}/usr"
+        cp -r usr/. "${pkgdir}/usr/"
+    fi
+
+    # optional installed script
+    if [ -f "etc/calamares/pkgbuild/build-calamares" ]; then
+        install -Dm755 \
+            "etc/calamares/pkgbuild/build-calamares" \
+            "${pkgdir}/usr/bin/build-calamares"
+    fi
 }

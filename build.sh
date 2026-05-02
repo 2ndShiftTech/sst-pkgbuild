@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 ##################################################################################################################
 # Author    : Erik Dubois
 # Website   : https://www.erikdubois.be
@@ -23,129 +24,36 @@
 #tput setaf 8 = light blue
 ##################################################################################################################
 
-set -eo pipefail
-set -u
-shopt -s nullglob
+# variables and functions
+workdir=$(pwd)
 
-WORKDIR=$(pwd)
-REPODIR="$HOME/Documents/SST/sst-repo/x86_64"
-REPONAME="sst-repo.db.tar.gz"
+##################################################################################################################
 
-FAILED=()
-BUILT=()
-SKIPPED=()
+#!/bin/bash
 
-mkdir -p "$REPODIR"
+# Define array of target directories
+dirs=(
+    "sst-calamares-config"
+)
 
-echo "=========================================="
-echo "Detecting changed packages..."
-echo "=========================================="
+# Loop through each directory
+for dir in "${dirs[@]}"; do
+    echo "Entering $dir"
+    cd "$dir" || { echo "Failed to enter $dir"; continue; }
 
-# Get changed files (last commit vs working tree)
-CHANGED_FILES=$(git status --porcelain | awk '{print $2}')
-
-# Extract unique top-level dirs
-CHANGED_DIRS=()
-for file in $CHANGED_FILES; do
-    topdir="${file%%/*}"
-    CHANGED_DIRS+=("$topdir")
-done
-
-# Deduplicate
-CHANGED_DIRS=($(printf "%s\n" "${CHANGED_DIRS[@]}" | sort -u))
-
-echo "Changed dirs:"
-printf ' - %s\n' "${CHANGED_DIRS[@]}"
-echo
-
-echo "=========================================="
-echo "Building packages..."
-echo "=========================================="
-
-for dir in */; do
-    dir="${dir%/}"
-
-    [ -f "$dir/PKGBUILD" ] || continue
-
-    # Skip if not changed
-    if [[ ! " ${CHANGED_DIRS[*]} " =~ " $dir " ]]; then
-        SKIPPED+=("$dir")
-        continue
-    fi
-
-    echo
-    echo ">>> Building $dir"
-
-    if ! cd "$WORKDIR/$dir"; then
-        FAILED+=("$dir (cd failed)")
-        continue
-    fi
-
-    success=true
-    scripts=(build*)
-
-    if [ ${#scripts[@]} -gt 0 ]; then
-        for script in "${scripts[@]}"; do
-            if [[ -x "$script" ]]; then
-                echo "Running $script"
-                if ! ./"$script"; then
-                    FAILED+=("$dir/$script")
-                    success=false
-                    break
-                fi
-            fi
-        done
-    else
-        if ! makepkg -s --noconfirm; then
-            FAILED+=("$dir (makepkg)")
-            success=false
-        fi
-    fi
-
-    if [ "$success" = true ]; then
-        pkgs=(*.pkg.tar.zst)
-        if [ ${#pkgs[@]} -gt 0 ]; then
-            cp -f "${pkgs[@]}" "$REPODIR/"
-            BUILT+=("$dir")
+    # Find and execute build* scripts
+    for script in build*; do
+        if [[ -x "$script" && -f "$script" ]]; then
+            echo "Running $script"
+            ./"$script"
         else
-            FAILED+=("$dir (no pkg output)")
+            echo "No executable build* script found in $dir"
         fi
-    fi
-
-    cd "$WORKDIR" || exit
+    done
+    cd ..
 done
 
-echo
-echo "=========================================="
-echo "Updating repo..."
-echo "=========================================="
 
-cd "$REPODIR" || exit
-
-if [ ${#BUILT[@]} -gt 0 ]; then
-    repo-add -n -R "$REPONAME" *.pkg.tar.zst
-    ln -sf sst-repo.db.tar.gz sst-repo.db
-    ln -sf sst-repo.files.tar.gz sst-repo.files
-    echo "Repo updated"
-else
-    echo "No new builds, repo unchanged"
-fi
-
-echo
-echo "==================== SUMMARY ===================="
-
-echo "Built:"
-printf ' + %s\n' "${BUILT[@]:-None}"
-
-echo
-echo "Skipped (unchanged):"
-printf ' - %s\n' "${SKIPPED[@]:-None}"
-
-echo
-echo "Failed:"
-printf ' ! %s\n' "${FAILED[@]:-None}"
-
-echo "================================================"
 echo
 tput setaf 6
 echo "##############################################################"
