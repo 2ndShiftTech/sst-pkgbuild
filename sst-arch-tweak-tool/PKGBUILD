@@ -1,0 +1,26 @@
+pkgname=satt
+pkgver=1.0.r0.g0000000
+pkgrel=1
+pkgdesc="Arch Linux tweak tool from Erik Dubois - 2nd Shift Tech Version"
+arch=('any')
+url="https://github.com/erikdubois/archlinux-tweak-tool"
+license=('MIT')
+depends=('zsh' 'git')
+source=("git+https://github.com/erikdubois/archlinux-tweak-tool.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/archlinux-tweak-tool"
+  printf "1.0.r%s.g%s" \
+    "$(git rev-list --count HEAD)" \
+    "$(git rev-parse --short HEAD)"
+}
+
+package() {
+  cd "$srcdir/archlinux-tweak-tool"
+
+
+  install -dm755 "$pkgdir/usr/share/satt"
+  cp -r . "$pkgdir/usr/share/satt"
+
+}
