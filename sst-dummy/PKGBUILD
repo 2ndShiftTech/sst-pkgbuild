@@ -1,0 +1,80 @@
+# Maintainer: 2nd Shift Technician <secondshifttech@proton.me>
+
+pkgbase=linux-kiro
+pkgname=("$pkgbase" "$pkgbase-headers")
+pkgver=7.0.1
+pkgrel=1
+pkgdesc="Custom KIRO kernel (CachyOS + BORE scheduler, gaming optimized)"
+arch=(x86_64)
+url="https://github.com/erikdubois/linux-kiro"
+license=(GPL2)
+
+makedepends=(
+  bc kmod libelf pahole cpio perl tar xz
+  xmlto python-sphinx python-sphinx_rtd_theme graphviz imagemagick
+)
+
+options=(!strip)
+
+_source_dir="linux-${pkgver}"
+
+source=(
+  "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-${pkgver}.tar.xz"
+  "config"
+)
+
+sha256sums=(
+  'SKIP'
+  'SKIP'
+)
+
+# ---- Custom options (edit these for your repo defaults) ----
+_cpusched="bore"
+_processor_opt="generic_v3"
+_HZ_ticks=1000
+_preempt="full"
+_cc_harder="yes"
+# ----------------------------------------------------------
+
+prepare() {
+  cd "$_source_dir"
+
+  cp "${srcdir}/config" .config
+
+  yes "" | make oldconfig
+}
+
+build() {
+  cd "$_source_dir"
+
+  make -j$(nproc)
+}
+
+package_linux-kiro() {
+  pkgdesc="The Linux KIRO kernel"
+
+  cd "$_source_dir"
+
+  make INSTALL_MOD_PATH="$pkgdir/usr" modules_install
+
+  install -Dm644 arch/x86/boot/bzImage \
+    "$pkgdir/boot/vmlinuz-$pkgbase"
+
+  install -Dm644 System.map \
+    "$pkgdir/boot/System.map-$pkgbase"
+
+  install -Dm644 .config \
+    "$pkgdir/boot/config-$pkgbase"
+}
+
+package_linux-kiro-headers() {
+  pkgdesc="Headers for the Linux KIRO kernel"
+
+  cd "$_source_dir"
+
+  mkdir -p "$pkgdir/usr/lib/modules/${pkgver}-kiro"
+
+  cp -r include "$pkgdir/usr/lib/modules/${pkgver}-kiro/"
+  cp -r scripts "$pkgdir/usr/lib/modules/${pkgver}-kiro/"
+  cp Makefile Module.symvers "$pkgdir/usr/lib/modules/${pkgver}-kiro/"
+}
